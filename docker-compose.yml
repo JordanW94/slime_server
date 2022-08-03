@@ -1,0 +1,9 @@
+version: '3.3'
+services:
+  slime_server:
+      container_name: slim_server
+      tty: true
+      build: .
+      command: bash -c "python3 source/run_bot.py setup; python3 source/run_bot.py startbot attachtmux"
+      env_file:
+        - .env

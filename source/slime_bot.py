@@ -14,12 +14,13 @@ __license__ = "GPL 3"
 __status__ = "Development"
 
 # Exits script if no token file found (usually: ~/keys/slime_server.token).
-if os.path.isfile(slime_vars.bot_token_file):
-    with open(slime_vars.bot_token_file, 'r') as file:
-        TOKEN = file.readline()
-else:
+if slime_vars.bot_token_file is None:
     print("Missing Token File:", slime_vars.bot_token_file)
     sys.exit()
+else:
+    print("Found token...")
+    TOKEN = slime_vars.bot_token_file
+    
 
 ctx = 'slime_bot.py'  # For logging. So you know where it's coming from.
 
@@ -80,15 +81,18 @@ async def on_select_option(interaction):
 
     await interaction.respond(type=6)
 
+    # Removes any escape chars.
+    value = interaction.values[0].strip()
+
     # Updates teleport_selection corresponding value based on which selection box is updated.
-    if interaction.custom_id == 'teleport_target': teleport_selection[0] = interaction.values[0]
-    if interaction.custom_id == 'teleport_destination': teleport_selection[1] = interaction.values[0]
+    if interaction.custom_id == 'teleport_target': teleport_selection[0] = value
+    if interaction.custom_id == 'teleport_destination': teleport_selection[1] = value
 
     # World/server backup panel
-    if interaction.custom_id == 'restore_server_selection': restore_server_selection = interaction.values[0]
-    if interaction.custom_id == 'restore_world_selection': restore_world_selection = interaction.values[0]
+    if interaction.custom_id == 'restore_server_selection': restore_server_selection = value
+    if interaction.custom_id == 'restore_world_selection': restore_world_selection = value
 
-    if interaction.custom_id == 'player_select': player_selection = interaction.values[0]
+    if interaction.custom_id == 'player_select': player_selection = value
 
 async def _delete_current_components():
     """
@@ -1761,67 +1765,71 @@ class Bot_Functions(commands.Cog):
     async def controlpanel(self, ctx):
         """Quick action buttons."""
 
-        await ctx.send("**Control Panel**\nServer:", components=[[
-            Button(label="Status Page", emoji='\U00002139', custom_id="serverstatus"),
-            Button(label="Stop Server", emoji='\U0001F6D1', custom_id="serverstop")
-            if await server_status() else
-            Button(label="Start Server", emoji='\U0001F680', custom_id="serverstart"),
-            Button(label="Reboot Server", emoji='\U0001F501', custom_id="serverrestart"),
-        ], [
-            Button(label="Server Version", emoji='\U00002139', custom_id="serverversion"),
-            Button(label="Show MotD", emoji='\U0001F4E2', custom_id="motd"),
-            Button(label="Show Properties File", emoji='\U0001F527', custom_id="propertiesall"),
-            Button(label="Server Logs", emoji='\U0001F4C3', custom_id="serverlog"),
-            Button(label="Connections Logs", emoji='\U0001F4E1', custom_id="serverconnectionslog"),
-        ]])
+        await ctx.send("**Control Panel**\n")
 
-        await ctx.send("Saving & Backups:", components=[[
-            Button(label="Backup World", emoji='\U0001F195', custom_id="worldbackupdate"),
-            Button(label="Backup Server", emoji='\U0001F195', custom_id="serverbackupdate"),
-            Button(label='Show World Backups', emoji='\U0001F4BE', custom_id="restoreworldpanel"),
-            Button(label="Show Server Backups", emoji='\U0001F4BE', custom_id="restoreserverpanel"),
-        ], [
-            Button(label="Disable Autosave", emoji='\U0001F504', custom_id="autosaveoff") \
-            if slime_vars.autosave_status else
-            Button(label="Enable Autosave", emoji='\U0001F504', custom_id="autosaveon"),
-            Button(label="Save World", emoji='\U0001F30E', custom_id="saveall"),
-        ]])
+        if slime_vars.manage_panels['server']['enabled']:
+            await ctx.send("Server:", components=[[
+                Button(label="Status Page", emoji='\U00002139', custom_id="serverstatus", disabled=not slime_vars.manage_panels['server']['status-page']),
+                Button(label="Stop Server", emoji='\U0001F6D1', custom_id="serverstop", disabled=not slime_vars.manage_panels['server']['start-stop-server'])
+                if await server_status() else
+                Button(label="Start Server", emoji='\U0001F680', custom_id="serverstart", disabled=not slime_vars.manage_panels['server']['start-stop-server']),
+                Button(label="Reboot Server", emoji='\U0001F501', custom_id="serverrestart", disabled=not slime_vars.manage_panels['server']['reboot-server']),
+            ], [
+                Button(label="Server Version", emoji='\U00002139', custom_id="serverversion", disabled=not slime_vars.manage_panels['server']['server-version']),
+                Button(label="Show MotD", emoji='\U0001F4E2', custom_id="motd", disabled=not slime_vars.manage_panels['server']['show-motd']),
+                Button(label="Show Properties File", emoji='\U0001F527', custom_id="propertiesall", disabled=not slime_vars.manage_panels['server']['show-properties-file']),
+                Button(label="Server Logs", emoji='\U0001F4C3', custom_id="serverlog", disabled=not slime_vars.manage_panels['server']['server-logs']),
+                Button(label="Connections Logs", emoji='\U0001F4E1', custom_id="serverconnectionslog", disabled=not slime_vars.manage_panels['server']['connection-logs']),
+            ]])
 
-        await ctx.send("Players:", components=[[
-            Button(label="Player List", emoji='\U0001F5B1', custom_id="playerlist"),
-            Button(label="Chat Log", emoji='\U0001F5E8', custom_id="chatlog"),
-            Button(label="Show Banned", emoji='\U0001F6AB', custom_id="banlist"),
-            Button(label="Show Whitelist", emoji='\U0001F4C3', custom_id="whitelist"),
-            Button(label="Show OP List", emoji='\U0001F4DC', custom_id="oplist"),
-        ], [
-            Button(label='Player Panel', emoji='\U0001F39B', custom_id='playerpanel'),
-            Button(label='Teleport', emoji='\U000026A1', custom_id='teleport')
-        ]])
+            await ctx.send("Saving & Backups:", components=[[
+                Button(label="Backup World", emoji='\U0001F195', custom_id="worldbackupdate", disabled=not slime_vars.manage_panels['server']['backup-world']),
+                Button(label="Backup Server", emoji='\U0001F195', custom_id="serverbackupdate", disabled=not slime_vars.manage_panels['server']['backup-server']),
+                Button(label='Show World Backups', emoji='\U0001F4BE', custom_id="restoreworldpanel", disabled=not slime_vars.manage_panels['server']['show-world-backups']),
+                Button(label="Show Server Backups", emoji='\U0001F4BE', custom_id="restoreserverpanel", disabled=not slime_vars.manage_panels['server']['show-server-backups']),
+            ], [
+                Button(label="Disable Autosave", emoji='\U0001F504', custom_id="autosaveoff", disabled=not slime_vars.manage_panels['server']['enable-autosave']) \
+                if slime_vars.autosave_status else
+                Button(label="Enable Autosave", emoji='\U0001F504', custom_id="autosaveon", disabled=not slime_vars.manage_panels['server']['enable-autosave']),
+                Button(label="Save World", emoji='\U0001F30E', custom_id="saveall", disabled=not slime_vars.manage_panels['server']['save-world']),
+            ]])
 
-        await ctx.send("Time & Weather:", components=[[
-            Button(label='Day', emoji='\U00002600', custom_id="timeday"),
-            Button(label="Night", emoji='\U0001F319', custom_id="timenight"),
-            Button(label='Enable Time', emoji='\U0001F7E2', custom_id="timeon"),
-            Button(label='Disable Time', emoji='\U0001F534', custom_id="timeoff"),
-        ], [
-            Button(label='Clear', emoji='\U00002600', custom_id="weatherclear"),
-            Button(label="Rain", emoji='\U0001F327', custom_id="weatherrain"),
-            Button(label='Thunder', emoji='\U000026C8', custom_id="weatherthunder"),
-            Button(label='Enable Weather', emoji='\U0001F7E2', custom_id="weatheron"),
-            Button(label='Disable Weather', emoji='\U0001F534', custom_id="weatheroff"),
-        ]])
-
-        await ctx.send("Bot:", components=[[
-            Button(label='Restart Bot', emoji='\U0001F501', custom_id="restartbot"),
-            Button(label='Set Channel ID', emoji='\U0001FA9B', custom_id="setchannelid"),
-            Button(label="Bot Logs", emoji='\U0001F4C3', custom_id="botlog"),
-        ]])
-
-        await ctx.send("Extra:", components=[[
-            Button(label='Refresh Control Panel', emoji='\U0001F504', custom_id="controlpanel"),
-            Button(label="Get Address", emoji='\U0001F310', custom_id="ip"),
-            Button(label='Website Links', emoji='\U0001F517', custom_id="links"),
-        ]])
+        if slime_vars.manage_panels['players']['enabled']:
+            await ctx.send("Players:", components=[[
+                Button(label="Player List", emoji='\U0001F5B1', custom_id="playerlist", disabled=not slime_vars.manage_panels['players']['player-list']),
+                Button(label="Chat Log", emoji='\U0001F5E8', custom_id="chatlog", disabled=not slime_vars.manage_panels['players']['chat-log']),
+                Button(label="Show Banned", emoji='\U0001F6AB', custom_id="banlist", disabled=not slime_vars.manage_panels['players']['show-banned']),
+                Button(label="Show Whitelist", emoji='\U0001F4C3', custom_id="whitelist", disabled=not slime_vars.manage_panels['players']['show-whitelist']),
+                Button(label="Show OP List", emoji='\U0001F4DC', custom_id="oplist", disabled=not slime_vars.manage_panels['players']['show-op-list']),
+            ], [
+                Button(label='Player Panel', emoji='\U0001F39B', custom_id='playerpanel', disabled=not slime_vars.manage_panels['players']['player-panel']),
+                Button(label='Teleport', emoji='\U000026A1', custom_id='teleport', disabled=not slime_vars.manage_panels['players']['teleport'])
+            ]])
+        if slime_vars.manage_panels['time-weather']['enabled']:
+            await ctx.send("Time & Weather:", components=[[
+                Button(label='Day', emoji='\U00002600', custom_id="timeday", disabled=not slime_vars.manage_panels['time-weather']['day']),
+                Button(label="Night", emoji='\U0001F319', custom_id="timenight", disabled=not slime_vars.manage_panels['time-weather']['night']),
+                Button(label='Enable Time', emoji='\U0001F7E2', custom_id="timeon", disabled=not slime_vars.manage_panels['time-weather']['enable-time']),
+                Button(label='Disable Time', emoji='\U0001F534', custom_id="timeoff", disabled=not slime_vars.manage_panels['time-weather']['enable-time']),
+            ], [
+                Button(label='Clear', emoji='\U00002600', custom_id="weatherclear", disabled=not slime_vars.manage_panels['time-weather']['clear']),
+                Button(label="Rain", emoji='\U0001F327', custom_id="weatherrain", disabled=not slime_vars.manage_panels['time-weather']['rain']),
+                Button(label='Thunder', emoji='\U000026C8', custom_id="weatherthunder", disabled=not slime_vars.manage_panels['time-weather']['thunder']),
+                Button(label='Enable Weather', emoji='\U0001F7E2', custom_id="weatheron", disabled=not slime_vars.manage_panels['time-weather']['enable-weather']),
+                Button(label='Disable Weather', emoji='\U0001F534', custom_id="weatheroff", disabled=not slime_vars.manage_panels['time-weather']['enable-weather']),
+            ]])
+        if slime_vars.manage_panels['bot']['enabled']:
+            await ctx.send("Bot:", components=[[
+                Button(label='Restart Bot', emoji='\U0001F501', custom_id="restartbot", disabled=not slime_vars.manage_panels['bot']['restart-bot']),
+                Button(label='Set Channel ID', emoji='\U0001FA9B', custom_id="setchannelid", disabled=not slime_vars.manage_panels['bot']['set-channel-id']),
+                Button(label="Bot Logs", emoji='\U0001F4C3', custom_id="botlog", disabled=not slime_vars.manage_panels['bot']['bot-logs']),
+            ]])
+        if slime_vars.manage_panels['extra']['enabled']:
+            await ctx.send("Extra:", components=[[
+                Button(label='Refresh Control Panel', emoji='\U0001F504', custom_id="controlpanel", disabled=not slime_vars.manage_panels['extra']['refresh-control-panel']),
+                Button(label="Get Address", emoji='\U0001F310', custom_id="ip", disabled=not slime_vars.manage_panels['extra']['get-address']),
+                Button(label='Website Links', emoji='\U0001F517', custom_id="links", disabled=not slime_vars.manage_panels['extra']['website-links']),
+            ]])
 
         lprint(ctx, 'Opened control panel')
 

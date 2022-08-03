@@ -1,24 +1,24 @@
 import os
 
 # Set this variable if you're also using Debian based system. if not ignore this and manually set your file/folder paths.
-user = os.getlogin()
+user = "hoviis"
 
 # Set location of Discord bot token.
-bot_token_file = f'/home/{user}/keys/slime_server.token'
+bot_token_file = os.getenv("bot_token")
 
 # Set as None if not using a python virtual env.
-pyenv_activate_command = f'source /home/{user}/pyenvs/slime_server/bin/activate'
+pyenv_activate_command = f'source ./pyenvs/slime_server/bin/activate'
 
 # Optionally add channel ID, send message indicating bot is ready on startup.
-channel_id = 860361620492255292
+channel_id = 1001571913241477151
 
 # Server URL or IP address. In case you're using a DDNS or something.
-server_url = 'arcpy.asuscomm.com'
-server_port = 25566
+server_url = '192.168.1.70'
+server_port = 25565
 
 # ========== Interfacing Options
 # Local file access allows for server files/folders manipulation,for features like backup/restore world saves, editing server.properties file, and read server log.
-server_files_access = True
+server_files_access = False
 
 # Uses subprocess.Popen() to run Minecraft server and send commands. If this bot halts, server will halts also. Useful if can't use Tmux.
 # Prioritize use_subprocess over Tmux option.
@@ -30,7 +30,7 @@ tmux_session_name = 'sess'
 
 # Use RCON to send commands to server. You won't be able to use some features like reading server logs.
 use_rcon = True
-rcon_pass = 'rconpass420'
+rcon_pass = 'testme1234'
 rcon_port = 25575
 
 # ========== Minecraft Server Config
@@ -82,6 +82,60 @@ useful_websites = {'Minecraft Downlaod': 'https://www.minecraft.net/en-us/downlo
                    'Minecraft Server Commands': 'https://minecraft.gamepedia.com/Commands#List_and_summary_of_commands',
                    'Minecraft /gamerule Commands': 'https://minecraft.gamepedia.com/Game_rule',
                    }
+
+
+# control panel vars
+manage_panels = {
+	'server':{
+		'enabled': True,
+		'status-page': True,
+		'start-stop-server': True,
+		'reboot-server': True,
+		'server-version': True,
+		'show-motd': False,
+		'show-properties-file': False,
+		'server-logs': False,
+		'connection-logs': False,
+		'backup-world': False,
+		'backup-server': False,
+		'show-world-backups': False,
+		'show-server-backups': False,
+		'enable-autosave': False,
+		'save-world': True
+	},
+	'players': {
+		'enabled': True,
+		'player-list': True,
+		'chat-log': False,
+		'show-banned': False,
+		'show-whitelist': False,
+		'show-op-list': False,
+		'player-panel': True,
+		'teleport': True
+	},
+	'time-weather':{
+		'enabled': True,
+		'day': True,
+		'night': True,
+		'enable-time': False,
+		'clear': True,
+		'rain': True,
+		'thunder': True,
+		'enable-weather': True
+	},
+	'bot':{
+		'enabled': True,
+		'restart-bot': True,
+		'set-channel-id': True,
+		'bot-logs': True
+	},
+	'extra': {
+		'enabled': True,
+		'refresh-control-panel': True,
+		'get-address': True,
+		'website-links': True
+	}
+}
 
 # ========== Other variables. DON'T TOUCH.
 bot_files_path = os.path.dirname(os.path.abspath(__file__))

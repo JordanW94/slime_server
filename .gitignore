@@ -7,3 +7,5 @@ test.py
 *.pyc
 
 source/bot_log.txt
+source/slime_server.token
+.env
