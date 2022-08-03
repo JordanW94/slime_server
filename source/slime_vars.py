@@ -30,7 +30,7 @@ tmux_session_name = 'sess'
 
 # Use RCON to send commands to server. You won't be able to use some features like reading server logs.
 use_rcon = True
-rcon_pass = 'testme1234'
+rcon_pass = os.getenv("rcon_pass")
 rcon_port = 25575
 
 # ========== Minecraft Server Config
