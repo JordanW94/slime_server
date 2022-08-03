@@ -4,7 +4,7 @@ import os
 user = "hoviis"
 
 # Set location of Discord bot token.
-bot_token_file = os.getenv("bot_token")
+bot_token = os.getenv("bot_token")
 
 # Set as None if not using a python virtual env.
 pyenv_activate_command = f'source ./pyenvs/slime_server/bin/activate'

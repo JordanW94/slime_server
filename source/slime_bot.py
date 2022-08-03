@@ -14,12 +14,12 @@ __license__ = "GPL 3"
 __status__ = "Development"
 
 # Exits script if no token file found (usually: ~/keys/slime_server.token).
-if slime_vars.bot_token_file is None:
-    print("Missing Token File:", slime_vars.bot_token_file)
+if slime_vars.bot_token is None:
+    print("Missing Token File:", slime_vars.bot_token)
     sys.exit()
 else:
     print("Found token...")
-    TOKEN = slime_vars.bot_token_file
+    TOKEN = slime_vars.bot_token
     
 
 ctx = 'slime_bot.py'  # For logging. So you know where it's coming from.
